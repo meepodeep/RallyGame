@@ -760,6 +760,17 @@
                     "action": "Lights",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "134af6ec-d0d0-48a8-83ce-a651ef2ac6f3",
+                    "path": "<Keyboard>/l",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Lights",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },
