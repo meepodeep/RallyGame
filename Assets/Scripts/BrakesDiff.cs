@@ -11,8 +11,11 @@ public class BrakesDiff : MonoBehaviour
     float leftLock;
     float brakesOutput;
     float handbrakeOutput;
-    float brakeTorque = 2500;
+    float ABS;
+    float absUnlocker = -3000;
+    float brakeTorque = 3500;
     float handbrakeTorque = 3000;
+    public bool absEnable = true;
     public float brakeBalance = .8f;
     float brakeBalanceRear; 
     InputAction brakes;
@@ -22,6 +25,7 @@ public class BrakesDiff : MonoBehaviour
     float vInput;
     InputAction accelAction;
     bool isAccelerating;
+    public CarControl cc;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -55,22 +59,37 @@ public class BrakesDiff : MonoBehaviour
         
         foreach (var wheel in wheels)
         {   
+            //ABS
+            if (absEnable &&Mathf.Abs(wheel.slipLong) > .4f)
+            {
+                ABS = (1-(brakesOutput/1.2f));
+            }
+            else
+            {
+                ABS = 1;
+
+            }
+            //DIFF
             if (wheel.isLeftDrive){
-                wheel.wheelCollider.brakeTorque = Mathf.Clamp(((brakesOutput*brakeTorque*brakeBalance) + leftLock)+(Mathf.Abs(vInput-1)*400), 0, 7000);
+                wheel.wheelCollider.brakeTorque = Mathf.Clamp(((brakesOutput*brakeTorque*brakeBalance) + leftLock)+(Mathf.Abs(vInput-1)*(400*(1f/Mathf.Sqrt(cc.gear+2)))), 0, 7000)*ABS;
                 rpmLeft.text = wheel.wheelCollider.brakeTorque.ToString(); 
             }
             if (wheel.isRightDrive){
-                wheel.wheelCollider.brakeTorque = Mathf.Clamp(((brakesOutput*brakeTorque*brakeBalance) + rightLock)+(Mathf.Abs(vInput-1)*400), 0, 7000); 
+                wheel.wheelCollider.brakeTorque = Mathf.Clamp(((brakesOutput*brakeTorque*brakeBalance) + rightLock)+(Mathf.Abs(vInput-1)*(400*(1f/Mathf.Sqrt(cc.gear+2)))), 0, 7000)*ABS; 
                 rpmRight.text = wheel.wheelCollider.brakeTorque.ToString();
             }
+            //HANDBRAKE AND UNLOCKING WHEELS BC UNITY DUMB
             if (!wheel.motorized){
                 if (Mathf.Abs(wheel.wheelCollider.rpm) <= 1 && isAccelerating)
                 {
                     wheel.wheelCollider.motorTorque = 100;
                 }
                 if (handbrakeOutput < 1){
-                wheel.wheelCollider.brakeTorque = brakesOutput* brakeBalanceRear * brakeTorque;
-                }else{
+                wheel.wheelCollider.brakeTorque = brakesOutput* brakeBalanceRear * brakeTorque*ABS;
+                }
+            }else{
+                //HANDBRAKE 2
+                if (handbrakeOutput>0){
                     wheel.wheelCollider.brakeTorque = handbrakeOutput * handbrakeTorque;
                 }
             }

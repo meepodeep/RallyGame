@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
 using Unity.Collections;
+using Unity.Cinemachine;
 
 public class CarControl : MonoBehaviour
 {
@@ -25,27 +26,38 @@ public class CarControl : MonoBehaviour
     float driveRpm;
     public float driveDia;
     float speedFactor;
-    float maxRpm = 7000;
+    float maxRpm = 8000;
     float currentSteerRange;
     float currentMotorTorque;
     float nonDriveTorque;
     public int gear;
     bool isAccelerating;
+    bool firstPerson = false;
+    bool lightsOn = false;
     public bool steeringHelp;
     InputAction steerActionKeyboard;
     InputAction steerActionGamepad;
     InputAction accelAction;
     InputAction gearUp;
+    InputAction changeCamera;
     InputAction gearDown;
+    InputAction lightToggle;
     WheelControl[] wheels;
+    public GameObject[] lights;
+    public CinemachineCamera cinemachineCamera;
     public WheelCollider driveWheelRight;
     public WheelCollider driveWheelLeft;
+    public Transform steeringWheel;
+    public Transform popups;
     Rigidbody rigidBody;
     public GlobalSettings gs;
     public TMP_Text gearText;
     public TMP_Text speedText;
     public TMP_Text rpmText;
     public Image rpmNeedle;
+    public RectMask2D rpmGague;
+    public float powerCurve;
+    float clutchRPM;
     // Start is called before the first frame update
     void Start()
     {
@@ -55,6 +67,8 @@ public class CarControl : MonoBehaviour
         accelAction = InputSystem.actions.FindAction("Accel");
         steerActionKeyboard = InputSystem.actions.FindAction("SteerKeyboard");
         steerActionGamepad = InputSystem.actions.FindAction("SteerGamepad");
+        changeCamera = InputSystem.actions.FindAction("SwitchCamera");
+        lightToggle = InputSystem.actions.FindAction("Lights");
         rigidBody = GetComponent<Rigidbody>();
         FindFirstObjectByType<EngineSoundManager>().Play("EngineNoise");
         // Adjust center of mass vertically, to help prevent the car from rolling
@@ -69,10 +83,14 @@ public class CarControl : MonoBehaviour
 
     // Update is called once per frame
     void Shift(){
-        if (gear>=0){
-            gearText.text = gear.ToString() + " Gear";
-        }else{
-            gearText.text = "R" + " Gear";
+        if (gear>=1){
+            gearText.text = gear.ToString();
+        }else if(gear==-1){
+            gearText.text = "R";
+        }
+        else if (gear == 0)
+        {
+            gearText.text= "N";
         }
         
         switch (gear)
@@ -120,10 +138,47 @@ public class CarControl : MonoBehaviour
         }
     }
     void Update()
-    {
-        engineTorque = motorTorqueGear*Mathf.Abs(Mathf.Clamp((Mathf.Sqrt(2f*(((Mathf.Abs(engineRpm-1000))/10000)))+0.1f-Mathf.Pow(((Mathf.Abs(engineRpm-1000))/10000), 2f)), .01f, 10));
+    {   
+        if(lightToggle.WasPressedThisFrame() && lightsOn)
+        {
+            lights[0].SetActive(false);
+            
+            popups.localRotation = Quaternion.Euler(-86.427f, 216.72f, -219.097f);
+            lightsOn = false;
+            
+        }else if(lightToggle.WasPressedThisFrame())
+        {
+            lights[0].SetActive(true);
+            popups.localRotation = Quaternion.Euler(-51.098f,446.105f,-448.608f);
+            lightsOn = true;
+        }
+        if (changeCamera.WasPressedThisFrame() && !firstPerson)
+        {
+            cinemachineCamera.gameObject.SetActive(false);
+            firstPerson = true;
+        } else if(changeCamera.WasPressedThisFrame() && firstPerson)
+        {
+            cinemachineCamera.gameObject.SetActive(true);
+            firstPerson = false;
+        }
+        
+        cinemachineCamera.Lens.FieldOfView = Mathf.Lerp(60,100, realSpeed/90);
+        if (gear != 0)
+        {
+            powerCurve = Mathf.Abs(Mathf.Clamp((Mathf.Sqrt(2f*(((Mathf.Abs(engineRpm+clutchRPM-1000))/10000)))+0.1f-Mathf.Pow(((Mathf.Abs(engineRpm+clutchRPM-1000))/10000), 2f)), .01f, 10));
+            engineTorque = motorTorqueGear*powerCurve;
+        }
+        else
+        {
+            engineTorque = motorTorqueGear;
+        }
+        
         driveRpm = (driveWheelLeft.rpm+driveWheelRight.rpm)/2;
-        rpmNeedle.transform.rotation = Quaternion.Euler(rpmNeedle.transform.rotation.x, rpmNeedle.transform.rotation.y, engineRpm/100);
+        steeringWheel.localRotation = Quaternion.Euler(steerOutput*250, steeringWheel.rotation.y, steeringWheel.rotation.z);
+
+        //rpmNeedle.transform.rotation = Quaternion.Euler(rpmNeedle.transform.rotation.x, rpmNeedle.transform.rotation.y, (-engineRpm/100)+90);
+        rpmGague.padding = new Vector4(0,0,Mathf.Lerp(520,30,engineRpm/8000),0);
+        Debug.Log(engineRpm);
         vInput = accelAction.ReadValue<float>();
         if (gearUp.WasPressedThisFrame() && gear != 6)
         {
@@ -165,7 +220,7 @@ public class CarControl : MonoBehaviour
         forwardSpeed = driveRpm*Mathf.PI*driveDia/60;
         
         //Speedometer
-        speedText.text = Mathf.RoundToInt(forwardSpeed*2.23694f).ToString();
+        speedText.text = Mathf.RoundToInt(Mathf.Abs(forwardSpeed*2.23694f)).ToString();
         // Calculate how close the car is to top speed
         // as a number from zero to one
         speedFactor = Mathf.InverseLerp(0, maxSpeed, forwardSpeed);
@@ -180,19 +235,29 @@ public class CarControl : MonoBehaviour
         if (gear == 0){
             if(gs.isGamepad){
                  if (vInput > 0 && engineRpm <= maxRpm){
-                    engineRpm = vInput*10000;
+                    engineRpm = (vInput*1000000)*Time.deltaTime;
                 }else if(engineRpm >= idleRpm){
-                    engineRpm -= engineRpm/30;
+                    engineRpm -= (engineRpm/.3f)*Time.deltaTime;
                 }
             }else{
                 if (vInput > 0 && engineRpm <= maxRpm){
-                    engineRpm += vInput*300;
+                    engineRpm += (vInput*30000)*Time.deltaTime;
                 }else if(engineRpm >= idleRpm){
-                    engineRpm -= engineRpm/30;
+                    engineRpm -= (engineRpm/.3f)*Time.deltaTime;
                 }
             }
             engineRpm = Mathf.RoundToInt(engineRpm);
+            clutchRPM = engineRpm; 
         }else{
+            if (clutchRPM > 300)
+            {
+                clutchRPM -= engineRpm*100*Time.deltaTime;
+            }
+            else
+            {
+                clutchRPM = 1;
+            }
+
             engineRpm = Mathf.RoundToInt((Mathf.Lerp(0, maxRpm/10000,speedFactor)*10000)+ idleRpm);
         }
         

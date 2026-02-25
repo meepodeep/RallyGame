@@ -9,19 +9,21 @@ public class MusicManager : MonoBehaviour
     public Sound[] sounds; 
     public bool playing = false;
     public static MusicManager instance;
+    int randSong;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
         Application.runInBackground = true;
         if (instance == null)
+        {
             instance = this;
+        }  
         else
         {
             Destroy(gameObject);
             return;
         }
         DontDestroyOnLoad(gameObject);
-
         foreach (Sound s in sounds)
         {
             s.source = gameObject.AddComponent<AudioSource>();
@@ -48,7 +50,8 @@ public class MusicManager : MonoBehaviour
     }
 
     public void PlayRandom(){
-        sounds[UnityEngine.Random.Range(1,10)].source.Play();
+        randSong = UnityEngine.Random.Range(1,10);
+        sounds[randSong].source.Play();
     }
     public void Play (string name)
     {

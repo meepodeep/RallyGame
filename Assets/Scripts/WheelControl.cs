@@ -17,10 +17,12 @@ public class WheelControl : MonoBehaviour
     public bool isRightDrive;
     bool isPunctured = false;
     public Rigidbody carBody;
-    float slipLongThreshold, slipLatThreshold;
+    [HideInInspector]
+    public float slipLongThreshold, slipLatThreshold;
     Vector3 position;
     Quaternion rotation;
-    float slipLat, slipLong;
+    [HideInInspector]
+    public float slipLat, slipLong;
     bool groundHit = false;
     float relativeVelocity;
     float wheelDamage;
@@ -43,7 +45,7 @@ public class WheelControl : MonoBehaviour
     }
     void Update()
     {
-        Debug.Log(wheelDamage);
+        //Debug.Log(wheelDamage);
         if(groundHit == false){
             if (wheelCollider.GetGroundHit(out WheelHit ishit) == true){
                 relativeVelocity = Mathf.Abs(carBody.linearVelocity.y);
