@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class LapTimer : MonoBehaviour
 {
-    float lapTime = 0;
+    [HideInInspector]
+    public float lapTime = 0;
     public TMP_Text timer;
     bool isTiming;
     // Start is called once before the first execution of Update after the MonoBehaviour is created

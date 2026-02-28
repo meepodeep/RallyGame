@@ -21,7 +21,7 @@ public class Music : MonoBehaviour
             trackNumber += 1;
             if (musicManager.sounds[trackNumber].source != null)
             musicManager.sounds[trackNumber].source.Play();
-            else
+            if (trackNumber == 10)
             trackNumber = 0;
         }
         }

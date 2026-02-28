@@ -1,6 +1,6 @@
-using Unity.VisualScripting;
+
 using UnityEngine;
-using Unity.Mathematics;
+
 
 public class person : MonoBehaviour
 {

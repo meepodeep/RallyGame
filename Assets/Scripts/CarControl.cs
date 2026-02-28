@@ -2,7 +2,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
-using Unity.Collections;
 using Unity.Cinemachine;
 
 public class CarControl : MonoBehaviour
@@ -21,7 +20,7 @@ public class CarControl : MonoBehaviour
     float vInput;
     public float engineRpm;
     [HideInInspector]
-    float realSpeed;
+    public float realSpeed;
     float idleRpm;
     float driveRpm;
     public float driveDia;
@@ -178,7 +177,6 @@ public class CarControl : MonoBehaviour
 
         //rpmNeedle.transform.rotation = Quaternion.Euler(rpmNeedle.transform.rotation.x, rpmNeedle.transform.rotation.y, (-engineRpm/100)+90);
         rpmGague.padding = new Vector4(0,0,Mathf.Lerp(520,30,engineRpm/8000),0);
-        Debug.Log(engineRpm);
         vInput = accelAction.ReadValue<float>();
         if (gearUp.WasPressedThisFrame() && gear != 6)
         {
@@ -300,7 +298,7 @@ public class CarControl : MonoBehaviour
             else
             {
                 if (wheel.motorized){
-                    Debug.Log(wheel.wheelCollider.brakeTorque);
+                    //Debug.Log(wheel.wheelCollider.brakeTorque);
                     wheel.wheelCollider.motorTorque = 0;
                 }
                 

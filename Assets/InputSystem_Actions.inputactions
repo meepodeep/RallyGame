@@ -175,6 +175,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "resetToCheckpoint",
+                    "type": "Button",
+                    "id": "20cc58d9-b6cb-4361-8eee-8365faeb375c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -769,6 +778,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "Lights",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8aaabf49-5300-4b0a-b68e-31f4e77359a6",
+                    "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "resetToCheckpoint",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6debef54-d5c6-4e6b-ac22-0d8603794741",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "resetToCheckpoint",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

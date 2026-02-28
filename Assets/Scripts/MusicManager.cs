@@ -1,7 +1,7 @@
-using UnityEngine.Audio;
+
 using UnityEngine;
 using System;
-using Unity.Mathematics;
+
 
 
 public class MusicManager : MonoBehaviour
@@ -50,7 +50,7 @@ public class MusicManager : MonoBehaviour
     }
 
     public void PlayRandom(){
-        randSong = UnityEngine.Random.Range(1,10);
+        randSong = UnityEngine.Random.Range(0,10);
         sounds[randSong].source.Play();
     }
     public void Play (string name)

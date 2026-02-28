@@ -1,20 +1,66 @@
 using UnityEngine;
 using TMPro;
-using Microsoft.Unity.VisualStudio.Editor;
-using UnityEngine.UI;
-using UnityEngine.TextCore.Text;
+using UnityEngine.InputSystem;
 public class PaceNotes : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public TMP_Text PaceNote;
     private Sprite[] sprites;
+    private Vector3 Checkpoint; 
+    private Quaternion checkpointRot; 
     public UnityEngine.UI.Image uiImage;
+    private InputAction resetToCheckpoint;
+    public Rigidbody rb;
+    private float forwardVelocity;
+    public GameObject resetCheckpoint;
+    private float delayReset;
+    private LapTimer lapTimer;
     void Start()
     {
         sprites = Resources.LoadAll<Sprite>("Pacenotes");
+        resetToCheckpoint = InputSystem.actions.FindAction("resetToCheckpoint");
+        lapTimer = FindAnyObjectByType<LapTimer>();
+    }
+    void FixedUpdate()
+    {
+         Vector3 worldVelocity = rb.linearVelocity;
+
+        // Get the object's forward direction (which is already normalized)
+        Vector3 forwardDirection = transform.forward;
+
+        // Calculate the dot product to find the speed in the forward direction
+        forwardVelocity = Vector3.Dot(worldVelocity, forwardDirection);
+    }
+    void Update()
+    {
+        if (resetToCheckpoint.WasPressedThisFrame() && resetCheckpoint.activeInHierarchy && Checkpoint != null)
+        {
+            lapTimer.lapTime += 5;
+            gameObject.transform.position = Checkpoint;
+            gameObject.transform.rotation = checkpointRot;
+        }
+        if (Checkpoint != null && forwardVelocity < 1)
+        {
+            delayReset += 50*Time.deltaTime;
+        }
+        else
+        {
+            delayReset = 0;
+        }
+        if(delayReset > 100)
+        {
+            resetCheckpoint.SetActive(true);
+        }
+        else
+        {
+            resetCheckpoint.SetActive(false);
+        }
     }
     private void OnTriggerEnter(Collider other)
     {
+        Checkpoint = other.transform.position;
+        checkpointRot = other.transform.rotation;
+
         //Check if the collider of the other GameObject involved in the collision is tagged "Enemy"
         switch (other.tag)
         {
