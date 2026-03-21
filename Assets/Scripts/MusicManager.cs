@@ -50,7 +50,7 @@ public class MusicManager : MonoBehaviour
     }
 
     public void PlayRandom(){
-        randSong = UnityEngine.Random.Range(0,10);
+        randSong = UnityEngine.Random.Range(0,0);
         sounds[randSong].source.Play();
     }
     public void Play (string name)

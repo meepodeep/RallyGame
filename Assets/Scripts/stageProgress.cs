@@ -6,7 +6,7 @@ public class stageProgress : MonoBehaviour
     public Transform finish;
     public Image player;
     public float maxDiffH;
-    private float pacenoteCount = 22;
+    public float pacenoteCount;
     private float currentNote=0;
     private float iconPos;
     private Vector2 anchoredPos;

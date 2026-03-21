@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.InputSystem;
+using Unity.Mathematics;
 public class PaceNotes : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -38,6 +39,7 @@ public class PaceNotes : MonoBehaviour
             lapTimer.lapTime += 5;
             gameObject.transform.position = Checkpoint;
             gameObject.transform.rotation = checkpointRot;
+            
         }
         if (Checkpoint != null && forwardVelocity < 1)
         {
